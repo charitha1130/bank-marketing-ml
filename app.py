@@ -29,14 +29,26 @@ model_files = {
 st.markdown(
     """
     <style>
-    .block-container {padding-top: 2.2rem;}
-    div[data-testid="stMetric"] {
-        background-color: #F1F5F9;
-        border-left: 5px solid #0E7490;
-        padding: 12px 16px;
-        border-radius: 6px;
+    .block-container {padding-top: 1.5rem;}
+    .hero {
+        background: linear-gradient(120deg, #0E7490 0%, #4F46E5 60%, #9333EA 100%);
+        padding: 26px 32px;
+        border-radius: 14px;
+        margin-bottom: 1.2rem;
     }
-    div[data-testid="stMetricLabel"] p {font-size: 0.9rem; color: #475569;}
+    .hero h1 {color: white; margin: 0; font-size: 2rem; padding: 0;}
+    .hero p {color: #E0E7FF; margin: 6px 0 0 0; font-size: 1rem;}
+    div[data-testid="stMetric"] {
+        background-color: white;
+        border-top: 4px solid #4F46E5;
+        padding: 12px 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
+    }
+    div[data-testid="stMetricLabel"] p {font-size: 0.9rem; color: #64748B;}
+    div[data-testid="stMetricValue"] {color: #1E293B;}
+    button[data-baseweb="tab"] {font-size: 1rem; font-weight: 600;}
+    section[data-testid="stSidebar"] {border-right: 3px solid #C7D2FE;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -95,10 +107,15 @@ st.sidebar.markdown("---")
 st.sidebar.caption("Data: UCI Bank Marketing (Moro et al., 2014)")
 
 # ---------------- header ----------------
-st.title("🏦 Bank Marketing - Term Deposit Prediction")
-st.write(
-    "Five classifiers trained on a Portuguese bank's phone campaign data. "
-    "Choose a model on the left, upload the test file and check how it scores."
+st.markdown(
+    """
+    <div class="hero">
+      <h1>🏦 Bank Marketing - Term Deposit Prediction</h1>
+      <p>Five classifiers trained on a Portuguese bank's phone campaign data.
+      Choose a model on the left, upload the test file and check how it scores.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 # ---------------- read data ----------------
@@ -168,12 +185,18 @@ with tab_result:
         labels = np.array([[f"{cm[i, j]}\n({row_pct[i, j]:.1f}%)"
                             for j in range(2)] for i in range(2)])
         fig, ax = plt.subplots(figsize=(4.6, 3.6))
-        sns.heatmap(cm, annot=labels, fmt="", cmap="GnBu", cbar=False, ax=ax,
+        sns.heatmap(cm, annot=labels, fmt="", cmap="PuBu", cbar=False, ax=ax,
+                    linewidths=2, linecolor="white",
+                    annot_kws={"fontsize": 12, "fontweight": "bold"},
                     xticklabels=["no", "yes"], yticklabels=["no", "yes"])
         ax.set_xlabel("Predicted")
         ax.set_ylabel("Actual")
         st.pyplot(fig, use_container_width=False)
-        st.caption("Percentages are out of each actual class (row).")
+        caught = cm[1, 1]
+        st.caption(
+            f"Of {cm[1].sum()} clients who really subscribed, the model "
+            f"found {caught} and missed {cm[1, 0]}. "
+            f"It also flagged {cm[0, 1]} clients who did not subscribe.")
 
     with right:
         st.markdown("##### Classification report")
