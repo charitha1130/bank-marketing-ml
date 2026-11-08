@@ -1,46 +1,68 @@
-# Bank Marketing - Term Deposit Classification
+# Bank Marketing - Term Deposit Prediction
 
-ML Assignment 2 - M.Tech (AIML), BITS Pilani WILP
+- Live app: https://bits-ml-assignment-2-bank-marketing.streamlit.app/
+- GitHub: https://github.com/charitha1130/bank-marketing-ml
 
 ## a. Problem statement
 
-A Portuguese bank runs phone marketing campaigns to sell term deposits. Calling
-every customer is expensive, so the goal is to predict from the client's
-details and the campaign history whether a client will subscribe to a term
-deposit (`yes`) or not (`no`). This is a binary classification problem. Five
-classifiers are trained on the same data, compared on six metrics and shown in
-a Streamlit app.
+A Portuguese bank sells term deposits through phone campaigns. Calling every
+customer costs time and money, so it helps to know in advance which clients are
+likely to say yes. Given a client's profile and the history of the campaign, the
+task is to predict whether the client subscribes to a term deposit (`yes`) or
+not (`no`).
+
+This is a binary classification problem. Five classifiers (Logistic Regression,
+Decision Tree, KNN, Naive Bayes and SVM) are trained on the same data, compared
+using six metrics, and shown in a Streamlit app where a test csv can be uploaded.
 
 ## b. Dataset description
 
-- Source: UCI Machine Learning Repository - Bank Marketing (`bank-full.csv`)
-- Instances: 45,211
-- Features: 16 (7 numeric, 9 categorical) + target `y`
-- Target: `y` - has the client subscribed to a term deposit (yes/no)
-- Class balance: about 88% `no` and 12% `yes`, so the data is imbalanced
-- Missing values: none (unknown values are stored as the text "unknown")
-- Citation: Moro, S., Rita, P., & Cortez, P. (2014). Bank Marketing. UCI Machine
-  Learning Repository. https://doi.org/10.24432/C5K306
+The data is the Bank Marketing dataset from the UCI Machine Learning Repository
+(`bank-full.csv`). Citation: Moro, S., Rita, P., & Cortez, P. (2014). Bank
+Marketing. UCI Machine Learning Repository. https://doi.org/10.24432/C5K306
 
-| Type | Columns |
-|------|---------|
-| Numeric | age, balance, day, duration, campaign, pdays, previous |
-| Categorical | job, marital, education, default, housing, loan, contact, month, poutcome |
+| Item | Value |
+|------|-------|
+| Instances | 45,211 |
+| Input features | 16 (7 numeric, 9 categorical) |
+| Target | `y` - client subscribed to a term deposit (yes / no) |
+| Class balance | about 88% no, 12% yes |
+| Missing values | none (unknown values are stored as the text "unknown") |
 
-Preprocessing: stratified 80/20 train-test split (`random_state=42`), numeric
-columns scaled with StandardScaler, categorical columns one-hot encoded. The
-preprocessor is fit on the training data only and saved as
-`model/preprocessor.pkl`.
+| Feature | Type | Meaning |
+|---------|------|---------|
+| age | numeric | age of the client |
+| job | categorical | type of job |
+| marital | categorical | marital status |
+| education | categorical | education level |
+| default | categorical | has credit in default |
+| balance | numeric | average yearly balance in euros |
+| housing | categorical | has a housing loan |
+| loan | categorical | has a personal loan |
+| contact | categorical | contact type (cellular, telephone, unknown) |
+| day | numeric | day of the month of the last contact |
+| month | categorical | month of the last contact |
+| duration | numeric | length of the last call in seconds |
+| campaign | numeric | number of contacts in this campaign |
+| pdays | numeric | days since the client was contacted in an earlier campaign (-1 = never) |
+| previous | numeric | number of contacts before this campaign |
+| poutcome | categorical | outcome of the earlier campaign |
+
+**Preprocessing.** The data is split 80/20 with a stratified split
+(`random_state=42`), giving 36,168 training rows and 9,043 test rows. Numeric
+columns are scaled with `StandardScaler` and categorical columns are one-hot
+encoded. The preprocessor is fitted on the training part only and saved as
+`model/preprocessor.pkl`. All five models use the same preprocessed features.
 
 ## c. GitHub repository link
 
-<PASTE GITHUB REPO LINK HERE>
+https://github.com/charitha1130/bank-marketing-ml
 
-Live app: <PASTE STREAMLIT APP LINK HERE>
+Live Streamlit app: https://bits-ml-assignment-2-bank-marketing.streamlit.app/
 
 ## d. Models used
 
-Comparison on the 20% hold-out test set (9,043 rows, same as `test_data.csv`):
+Results on the 20% hold-out test set (9,043 rows, saved as `test_data.csv`):
 
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
 |---------------|----------|-----|-----------|--------|----|-----|
@@ -50,67 +72,86 @@ Comparison on the 20% hold-out test set (9,043 rows, same as `test_data.csv`):
 | Naive Bayes | 0.8548 | 0.8101 | 0.4059 | 0.5198 | 0.4559 | 0.3774 |
 | Support Vector Machine | 0.9049 | 0.9036 | 0.6875 | 0.3431 | 0.4578 | 0.4420 |
 
-Precision, recall and F1 are for the positive class (`yes`). AUC uses predicted
-probabilities, and the SVM uses its decision function score. Since about 88% of
-the clients said "no", a model that always predicts "no" already gets about 0.88
-accuracy, so accuracy alone does not say much here. AUC, recall, F1 and MCC are
-more useful for comparing the models.
+Precision, recall and F1 are for the positive class (`yes`). AUC is computed
+from predicted probabilities; the SVM has no probabilities here, so its
+decision function score is used. Because about 88% of clients said no, a model
+that always predicts "no" already reaches about 0.88 accuracy. Accuracy alone
+is therefore not very informative, and AUC, recall, F1 and MCC matter more.
+
+Settings used for each model:
+
+| Model | Settings |
+|-------|----------|
+| Logistic Regression | max_iter=1000 |
+| Decision Tree | max_depth=8, min_samples_leaf=20 |
+| KNN | n_neighbors=7 |
+| Naive Bayes | GaussianNB, default settings |
+| SVM | RBF kernel, C=1.0 |
 
 ### Observations
 
 | ML Model Name | Observation about model performance |
 |---------------|-------------------------------------|
-| Logistic Regression | Best AUC (0.9056), so it ranks clients who will subscribe well. Recall is low (0.35), it misses most of the real "yes" clients at the default 0.5 cut-off. |
-| Decision Tree | Best F1 (0.4791) and a better recall (0.39) than LR and SVM. Its AUC (0.8771) is lower, so the probability ranking is rougher. Depth was limited to 8 to avoid overfitting. |
+| Logistic Regression | Best AUC (0.9056), so it ranks likely subscribers well. Recall is low (0.35): at the default 0.5 cut-off it misses most of the real "yes" clients. |
+| Decision Tree | Best F1 (0.4791) and better recall (0.39) than Logistic Regression and SVM. AUC (0.8771) is lower, so its probability ranking is rougher. Depth was limited to 8 to control overfitting. |
 | KNN | Weakest of the balanced models: lowest recall (0.33), lowest F1 (0.4336) and AUC of only 0.85. Distances get diluted by the many one-hot columns. |
-| Naive Bayes | Lowest accuracy (0.8548), precision (0.4059), AUC and MCC, but highest recall (0.5198). It flags many more clients as "yes", which catches more buyers but also gives many false positives. The independence assumption does not hold for one-hot features. |
-| Support Vector Machine | Highest accuracy (0.9049), precision (0.6875) and MCC (0.4420), and AUC (0.9036) is almost the same as LR. Recall is low (0.34) like LR. |
-| **Best for this dataset** | SVM is the best overall on accuracy, precision and MCC, with LR close behind on AUC. If the bank cares more about catching subscribers, Decision Tree (F1) or Naive Bayes (recall) fit better. All models have low recall because of the class imbalance. |
+| Naive Bayes | Lowest accuracy (0.8548), precision (0.4059), AUC and MCC, but the highest recall (0.5198). It labels many more clients as "yes", which catches more buyers but gives many false positives. The independence assumption does not hold well for one-hot features. |
+| Support Vector Machine | Highest accuracy (0.9049), precision (0.6875) and MCC (0.4420), with AUC (0.9036) almost equal to Logistic Regression. Recall is low (0.34), like Logistic Regression. |
+| **Overall, winner for your dataset?** | SVM is the best overall on accuracy, precision and MCC, with Logistic Regression close behind on AUC. If the bank cares more about catching subscribers, Decision Tree (F1) or Naive Bayes (recall) fit better. Recall is low for most models because of the class imbalance. |
 
-### Notes on the data
+## Streamlit app
 
-- Classes are imbalanced (about 12% `yes`). No resampling or threshold tuning was
-  done, which is why recall is low for most models.
-- `duration` (length of the last call) is only known after the call is made, so
-  in a real campaign it could not be used for the prediction. It was kept to stay
-  close to the standard version of the dataset.
+The app loads the saved models from `model/` and does not retrain on the data
+that is uploaded.
 
-## Project structure
+- Upload a test csv from the sidebar (use `test_data.csv`)
+- Dropdown to select one of the five models
+- Accuracy, AUC, Precision, Recall, F1 and MCC for the selected model
+- Confusion matrix and classification report
+- A comparison table and chart with all five models on the same file
+- A preview of the uploaded data
+
+The uploaded file needs the 16 input columns and the target column `y`
+(0/1 or no/yes). If nothing is uploaded, the app shows the bundled
+`test_data.csv`.
+
+## Repository contents
 
 ```
 bank-marketing-ml/
-|-- app.py               streamlit app
-|-- train_models.py      training + evaluation script
-|-- requirements.txt
-|-- README.md
-|-- test_data.csv        hold-out test rows (with target column)
-|-- model_results.csv    metrics table produced by train_models.py
-|-- data/                original UCI files
-|-- model/               saved preprocessor and the 5 trained models
+|-- app.py                   Streamlit app
+|-- train_models.py          training and evaluation script
+|-- bank_marketing_ml.ipynb  notebook version of the same steps
+|-- requirements.txt         pinned packages
+|-- test_data.csv            hold-out test rows with the target column
+|-- model_results.csv        metrics table from training
+|-- data/                    original UCI files
+|-- model/                   saved preprocessor and the five trained models
+|-- .streamlit/config.toml   app theme
 ```
 
 ## How to run
 
 ```
 pip install -r requirements.txt
-python train_models.py        # trains and saves models in model/
+python train_models.py
 streamlit run app.py
 ```
 
-## Streamlit app features
+`train_models.py` recreates `model/`, `test_data.csv` and `model_results.csv`.
 
-- Upload a test csv (use `test_data.csv`)
-- Dropdown to pick one of the 5 models
-- Accuracy, AUC, Precision, Recall, F1 and MCC for the selected model
-- Confusion matrix and classification report
-- Table with all 5 models on the uploaded data
+## About the csv files
 
-The app loads the saved models and does not retrain.
+- `data/bank-full.csv` is the full UCI file. 80% of it was used for training.
+- `test_data.csv` is the other 20% (9,043 rows) with `y` stored as 0/1. This is
+  the file to upload in the app, since the models never saw it in training.
+- The full `bank-full.csv` also works in the app, but its scores look better
+  than they should because it contains the training rows.
 
-### Which csv is which?
+## Notes on the data
 
-- `data/bank-full.csv` is the full UCI file the models were trained on (80% of it).
-- `test_data.csv` is the 20% hold-out part (9,043 rows) with the `y` column as
-  0/1. Upload this one in the app. The models never saw it during training.
-- Uploading the full `bank-full.csv` also works, but the score will be inflated
-  because it contains the training rows.
+- The classes are imbalanced (about 12% `yes`). No resampling or threshold
+  tuning was done, which is the main reason recall is low for most models.
+- `duration` (length of the last call) is only known after the call is made, so
+  it could not be used in a real campaign. It was kept to stay close to the
+  standard version of the dataset.
