@@ -8,7 +8,7 @@ import seaborn as sns
 import streamlit as st
 from sklearn.metrics import (accuracy_score, roc_auc_score, precision_score,
                              recall_score, f1_score, matthews_corrcoef,
-                             confusion_matrix, classification_report, roc_curve)
+                             confusion_matrix, classification_report)
 
 st.set_page_config(page_title="Term Deposit Predictor", page_icon="🏦",
                    layout="wide")
@@ -95,10 +95,10 @@ st.sidebar.markdown("---")
 st.sidebar.caption("Data: UCI Bank Marketing (Moro et al., 2014)")
 
 # ---------------- header ----------------
-st.title("🏦 Will the client take the term deposit?")
+st.title("🏦 Bank Marketing - Term Deposit Prediction")
 st.write(
-    "Five classifiers were trained on a Portuguese bank's phone campaign data. "
-    "Choose a model on the left, upload the test file and look at how it scores."
+    "Five classifiers trained on a Portuguese bank's phone campaign data. "
+    "Choose a model on the left, upload the test file and check how it scores."
 )
 
 # ---------------- read data ----------------
@@ -176,22 +176,11 @@ with tab_result:
         st.caption("Percentages are out of each actual class (row).")
 
     with right:
-        st.markdown("##### ROC curve")
-        fpr, tpr, _ = roc_curve(y_true, chosen["score"])
-        fig2, ax2 = plt.subplots(figsize=(4.6, 3.6))
-        ax2.plot(fpr, tpr, color="#0E7490",
-                 label=f"AUC = {chosen['metrics']['AUC']:.3f}")
-        ax2.plot([0, 1], [0, 1], "--", color="grey", linewidth=1)
-        ax2.set_xlabel("False positive rate")
-        ax2.set_ylabel("True positive rate")
-        ax2.legend(loc="lower right")
-        st.pyplot(fig2, use_container_width=False)
-
-    st.markdown("##### Classification report")
-    report = classification_report(y_true, chosen["pred"],
-                                   target_names=["no", "yes"],
-                                   output_dict=True, zero_division=0)
-    st.dataframe(pd.DataFrame(report).T.round(3), use_container_width=True)
+        st.markdown("##### Classification report")
+        report = classification_report(y_true, chosen["pred"],
+                                       target_names=["no", "yes"],
+                                       output_dict=True, zero_division=0)
+        st.dataframe(pd.DataFrame(report).T.round(3), use_container_width=True)
 
 # ---------------- tab 2: compare ----------------
 with tab_compare:
